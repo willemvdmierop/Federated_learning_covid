@@ -18,13 +18,13 @@ class FL_data(data.Dataset):
             print("We are building the dataset")
             self.df = self.build_dataset(dir=self.dir, image_size = self.img_size)
         else:
-            self.df = pickle.load(open('combined_dataset.pkl', 'rb'))
+            self.df = pickle.load(open('combined_dataset_' + self.stage +  '_.pkl', 'rb'))
 
     def build_dataset(self, dir, image_size):
         combined_dataset = []
         for folder in os.listdir(dir):
             path_fold = os.path.join(dir, folder)
-            if folder == 'val':
+            if folder == self.stage:
                 for directory in os.listdir(path_fold):
                     if directory == '.DS_Store':
                         os.remove(os.path.join(path_fold, directory))
@@ -45,12 +45,20 @@ class FL_data(data.Dataset):
                         # plt.imshow(img)
                         img = transform(img)
                         if directory == 'COVID19':
-                            combined_dataset.append([img, 1])
+                            combined_dataset.append([img, 1.])
                         else:
-                            combined_dataset.append([img, 0])
+                            combined_dataset.append([img, 0.])
             else:
                 continue
-        with open('combined_dataset.pkl', 'wb') as myfile:
+        with open('combined_dataset_' + self.stage +  '_.pkl', 'wb') as myfile:
             pickle.dump(combined_dataset, myfile)
 
         return combined_dataset
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        img = self.df[idx][0]
+        target = self.df[idx][1]
+        return img, target

@@ -35,6 +35,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.in_planes = kwargs['in_planes']
         self.channels = kwargs['channels']
+        self.batch_size = kwargs['batch_size']
         self.conv1 = nn.Conv2d(self.channels, self.in_planes, kernel_size=3, stride=1, padding=1, bias=False)
         nn.init.orthogonal_(self.conv1.weight.data, 1.)
         self.BatchN1 = nn.BatchNorm2d(64)
@@ -65,8 +66,7 @@ class ResNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        if self.att_on: out = self.attention_layer(out)  # we use self attention if this parameter is on.
         out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
-        out = torch.sigmoid(self.linear(out))
+        out = out.view(out.shape[0], 512)
+        out = self.linear(out)
         return out
