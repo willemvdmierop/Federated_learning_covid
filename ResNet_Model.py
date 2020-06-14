@@ -30,12 +30,11 @@ class BasicBlock(nn.Module):
         return out
 
 
-class ResNet_Discriminator(nn.Module):
+class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=1, **kwargs):
-        super(ResNet_Discriminator, self).__init__()
+        super(ResNet, self).__init__()
         self.in_planes = kwargs['in_planes']
         self.channels = kwargs['channels']
-        self.att_on = kwargs['attention']
         self.conv1 = nn.Conv2d(self.channels, self.in_planes, kernel_size=3, stride=1, padding=1, bias=False)
         nn.init.orthogonal_(self.conv1.weight.data, 1.)
         self.BatchN1 = nn.BatchNorm2d(64)
@@ -43,7 +42,6 @@ class ResNet_Discriminator(nn.Module):
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
-        if self.att_on: self.attention_layer = SelfAttn(512)
         self.linear = nn.Linear(512 * block.expansion, num_classes)
         self.init_weights()
 

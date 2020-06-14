@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import dataset
+import ResNet_Model
 import syft as sy
 
 
@@ -45,10 +46,12 @@ crypto_provider = connect_to_crypto_provider()
 
 print("\nWorkers: {}".format(workers))
 print("Crypto_provider", crypto_provider)
-
-# ============================================= 
+image_size = [64, 64]
+Features = image_size[0]
+nc = 3
+# ===================================================== create dataset =================================================
 # covid has label 1 others has label 0
-data_args = {'data_dir': 'FL_Covid_test/final_dataset', 'stage': 'train', 'create_dataset': True}
+data_args = {'data_dir': './final_dataset', 'stage': 'train', 'create_dataset': True, 'img_size': image_size}
 dataset = dataset.FL_data(**data_args)
 
 '''
@@ -61,6 +64,15 @@ dataset = dataset.FL_data(**data_args)
     ## OTHERS images are 19 in validation-set
 '''
 
+# ====================================================== create model ==================================================
 dirname = 'FL_Resnet_covid_19'
 wd = os.getcwd()
 if not os.path.exists(os.path.join(wd, dirname)): os.mkdir(os.path.join(wd, dirname))
+
+d_pars = {'in_planes': Features, 'channels': nc}
+
+# ResNet18: parameters discriminator 11183318
+
+model = ResNet_Model.ResNet(ResNet_Model.BasicBlock, [2, 2, 2, 2], **d_pars)
+
+print('model', model)

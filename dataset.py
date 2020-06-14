@@ -13,13 +13,14 @@ class FL_data(data.Dataset):
         self.dir = kwargs['data_dir']
         self.stage = kwargs['stage']
         self.create_dataset = kwargs['create_dataset']
+        self.img_size = kwargs['img_size']
         if self.create_dataset:
             print("We are building the dataset")
-            self.df = self.create_dataset(dir=self.dir)
+            self.df = self.build_dataset(dir=self.dir, image_size = self.img_size)
         else:
             self.df = pickle.load(open('combined_dataset.pkl', 'rb'))
 
-    def create_dataset(self, dir):
+    def build_dataset(self, dir, image_size):
         combined_dataset = []
         for folder in os.listdir(dir):
             path_fold = os.path.join(dir, folder)
@@ -37,7 +38,7 @@ class FL_data(data.Dataset):
                         img_path = os.path.join(path, im_dir)
                         img = PILImage.open(img_path)  # shape (913,1064,3)
                         img = img.convert('RGB')
-                        transform = transforms.Compose([transforms.Resize((512, 512)),
+                        transform = transforms.Compose([transforms.Resize(image_size),
                                                         transforms.ToTensor(),
                                                         transforms.Normalize(mean=[0.407, 0.457, 0.485],
                                                                              std=[1, 1, 1])])
