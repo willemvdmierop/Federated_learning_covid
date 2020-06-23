@@ -3,3 +3,6 @@
 *.pyc
 final_dataset/.DS_Store
 .DS_Store
+*.pkl
+*.pth
+*.csv

@@ -27,11 +27,11 @@ class Arguments():
         self.epochs = 1
         self.lr = 0.001
         self.seed = 1
-        self.log_interval = 10
+        self.log_interval = 1
         self.precision_fractional = 3
         self.create_dataset = True
         self.save_model = True
-        self.stage = 'test'
+        self.stage = 'val'
 
 
 args = Arguments()
@@ -63,25 +63,8 @@ if not os.path.exists(os.path.join(wd, dirname)): os.mkdir(os.path.join(wd, dirn
 
 model_pars = {'in_planes': Features, 'channels': nc, 'batch_size': batch_size}
 model_ResNet = ResNet_Model.ResNet(ResNet_Model.BasicBlock, [2, 2, 2, 2], **model_pars)
-model_ResNet = model_ResNet.to(device)
 optimizer_ResNet = optim.SGD(model_ResNet.parameters(), lr=args.lr)
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.fc1 = nn.Linear(13, 32)
-        self.fc2 = nn.Linear(32, 24)
-        self.fc3 = nn.Linear(24, 1)
-
-    def forward(self, x):
-        x = x.view(-1, 3*64*64)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
-model = Net()
-optimizer = optim.SGD(model.parameters(), lr=args.lr)
 # print('model', model_ResNet)
 # ====================================================== FL ==================================================
 
@@ -125,16 +108,12 @@ def train_ResNet(epoch):
     for batch_idx, (data, target) in enumerate(train_distributed_dataset):
         worker = data.location
         model_ResNet.send(worker)
-        #model.send(worker)
         optimizer_ResNet.zero_grad()
 
         pred = model_ResNet(data)
-        #pred = model(data)
         loss = F.mse_loss(pred.view(-1), target.type(torch.FloatTensor))
         loss.backward()
         optimizer_ResNet.step()
-        #optimizer.step()
-        #model.get()
         model_ResNet.get()
 
         if batch_idx % args.log_interval == 0:
